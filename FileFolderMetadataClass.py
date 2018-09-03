@@ -11,6 +11,7 @@ class FileFolderMetadataClass:
         self.AppKey = Credentials.AppKey
         self.AccessToken = Credentials.AccessToken
         self.AsUser = Credentials.AsUser
+        self.AuthenticatedUserId = Credentials.AuthenticatedUserId
 
     def GetStorageEndpoints(self):
         login_headers = {'As-User': '%s' % self.AsUser, 'Accept': 'application/json'}
@@ -23,8 +24,15 @@ class FileFolderMetadataClass:
             print('Failed to get storage endpoints')
 
     def GetDefaultStorage(self):
-            login_headers = {'As-User': '%s' % self.AsUser, 'Accept': 'application/json'}
-            url = "storage/storageendpoint.svc/"
+            user_id = self.AsUser if self.AsUser else self.AuthenticatedUserId
+
+            # Note about on-behalf-of sample and As-User header:
+            # Since the backend method we are calling requires admin permissions,
+            # we must not use the As-User header here (otherwise the method might not be authorized).
+            # Instead, specify the target user id in the URL parameter.
+            login_headers = { 'Accept': 'application/json' }
+
+            url = "storage/storageendpoint.svc/?user=%s" % user_id
             Method = "GET"
             request = CallAPI(url, self.AppKey, self.AccessToken, Method, login_headers).MakeRequest()
             if request.status_code == 200:
@@ -126,7 +134,7 @@ class FileFolderMetadataClass:
         return request
 
     def DeleteFile(self, SyncpointID, FileID):
-        login_headers = {'Accept': 'application/json'}
+        login_headers = {'As-User': '%s' % self.AsUser, 'Accept': 'application/json'}
         url = "sync/file.svc/%s/file/%s" % (SyncpointID, FileID)
         Method = "DELETE"
         request = CallAPI(url, self.AppKey, self.AccessToken, Method, login_headers).MakeRequest()

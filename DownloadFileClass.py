@@ -24,7 +24,8 @@ class Download:
         Method = "GET"
         base_url = self.get_url(Storage_Endpoint_ID)
         url = "retrieveFile.php?vToken=%s" % self.vtoken
-        request = CallAPI(url, self.AppKey, self.AccessToken, Method, AdditionalHeaders='', data='',
+        headers = { "As-User": self.AsUser }
+        request = CallAPI(url, self.AppKey, self.AccessToken, Method, headers, data='',
                           base_url='%s/' % base_url).MakeRequest()
 
         open('downloaded_file', 'wb').write(request.content)

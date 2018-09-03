@@ -39,3 +39,4 @@ class Authentication:
         json_data = json.loads(request.content.decode('utf8'))
         self.AccessToken = json_data["access_token"]
         self.Company_ID = json_data["user_company_id"]
+        self.AuthenticatedUserId = json_data["user_id"]
