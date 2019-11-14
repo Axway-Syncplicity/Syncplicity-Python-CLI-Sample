@@ -94,6 +94,22 @@ if DeleteLink.status_code == 200:
 else:
     print('Failed to delete link')
 
+# rename folder in syncpoint
+print('Renaming folder in syncpoint...\n')
+PutFolder = Content.RenameFolder(Folder=Folder)
+if PutFolder.status_code == 200:
+    print('Folder was renamed successfully\n')
+else:
+    print('Failed to rename folder. Status code {}. {}\n'.format(PutFolder.json()['StatusCode'], PutFolder.json()['StatusDescription']))  
+
+# rename file in folder
+print('Renaming file...\n') 
+PutFile = Content.RenameFile(Syncpoint[0]['Id'], Get_File[0])
+if PutFile.status_code == 200:
+    print('File was renamed succesfully\n')
+else:
+    print('Failed to rename file. Status code {}. {}\n'.format(PutFile.json()['StatusCode'], PutFile.json()['StatusDescription']))
+
 # delete file
 print('Deleting file...\n')
 DeleteFile = Content.DeleteFile(Syncpoint[0]['Id'], Get_File[0]['LatestVersionId'])
