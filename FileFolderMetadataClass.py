@@ -2,7 +2,10 @@
 
 
 import json
+import random
+import string
 from API_Caller import CallAPI
+from FolderStatus import FolderStatus
 
 
 class FileFolderMetadataClass:
@@ -17,7 +20,7 @@ class FileFolderMetadataClass:
         login_headers = {'As-User': '%s' % self.AsUser, 'Accept': 'application/json'}
         url = "storage/storageendpoints.svc/"
         Method = "GET"
-        request = CallAPI(url, self.AppKey, self.AccessToken, Method, login_headers).MakeRequest()
+        request = CallAPI(url, self.AppKey, self.AccessToken, Method, login_headers).MakeRequest()      
         if request.status_code == 200:
             return json.loads(request.content.decode("utf8"))
         else:
@@ -72,7 +75,7 @@ class FileFolderMetadataClass:
                          'Content-Type': 'application/json'}
         data = [{"SyncpointId": "%s" % Syncpoint,
                  "Name": "%s" % NewFolder,
-                 "Status": 1,
+                 "Status": FolderStatus.ADDED,
                  "VirtualPath": "\\%s" % NewFolder}]
         Method = "POST"
         json_data = json.dumps(data)
@@ -90,6 +93,34 @@ class FileFolderMetadataClass:
         Method = "GET"
         request = CallAPI(url, self.AppKey, self.AccessToken, Method, login_headers, data=json_data).MakeRequest()
         print(json.dumps(json.loads(request.content.decode("utf8")), sort_keys=True, indent=4))
+
+    def RenameFolder(self, Folder):
+        login_headers = {'As-User': '%s' % self.AsUser,
+                         'Accept': 'application/json',
+                         'Content-Type': 'application/json'}        
+        
+        Folder[0]['Name'] = ''.join(random.choice(string.ascii_letters) for i in range(len(Folder[0]['Name'])))
+        Folder[0]['Status'] = FolderStatus.MOVEDORRENAMED
+
+        json_data = json.dumps(Folder[0])        
+        url = "sync/folder.svc/%s/folder/" % Folder[0]['SyncpointId']
+        Method = "PUT"
+        request = CallAPI(url, self.AppKey, self.AccessToken, Method, login_headers, data=json_data).MakeRequest()
+        return request
+
+    def RenameFile(self, SynpointId, File):
+        login_headers = {'As-User': '%s' % self.AsUser,
+                         'Accept': 'application/json',
+                         'Content-Type': 'application/json'}        
+       
+        File['Filename'] = ''.join(random.choice(string.ascii_letters) for i in range(len(File['Filename'])))
+        File['Status'] = FolderStatus.MOVEDORRENAMED
+
+        json_data = json.dumps(File)        
+        url = "sync/file.svc/%s/file/" % File['SyncpointId']
+        Method = "PUT"
+        request = CallAPI(url, self.AppKey, self.AccessToken, Method, login_headers, data=json_data).MakeRequest()
+        return request
 
     def GetFolderFromSyncpoint(self, Syncpoint, FolderID):
         login_headers = {'As-User': '%s' % self.AsUser, 'Accept': 'application/json'}
